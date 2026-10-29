@@ -58,3 +58,39 @@ python -m streamlit run src/datapulse/dashboard/app.py
 ## Licença
 
 A definir.
+
+
+
+## Pipeline de dados
+
+O DataPulse possui um pipeline inicial para processamento
+de dados de vendas com Pandas.
+
+### Funcionalidades implementadas
+
+- Leitura de CSV com validação das colunas obrigatórias.
+- Conversão de datas e valores numéricos.
+- Identificação de campos ausentes ou inválidos.
+- Validação de quantidades e preços.
+- Remoção de vendas duplicadas por identificador.
+- Cálculo do faturamento por venda.
+- Geração de relatório de qualidade dos dados.
+- Exportação do CSV processado.
+
+### Executar o pipeline
+
+```powershell
+python -m src.datapulse.pipeline.run_pipeline
+```
+
+O arquivo de entrada utilizado na demonstração está em
+`data/raw/vendas.csv`.
+
+O resultado é gerado em
+`data/processed/vendas_limpas.csv`.
+
+### Executar os testes
+
+```powershell
+python -m pytest -v
+```

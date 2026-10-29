@@ -33,3 +33,17 @@ data/*
 # Relatórios e caches
 .coverage
 htmlcov/
+
+
+# Dados: manter os dados locais privados por padrão
+data/*
+!data/.gitkeep
+
+# Permitir apenas o CSV fictício de exemplo
+!data/raw/
+data/raw/*
+!data/raw/vendas.csv
+
+# Não publicar os dados processados gerados localmente
+!data/processed/
+data/processed/*
