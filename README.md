@@ -94,3 +94,31 @@ O resultado é gerado em
 ```powershell
 python -m pytest -v
 ```
+
+
+## Persistência SQL
+
+O DataPulse utiliza SQLAlchemy para persistir vendas em um banco SQLite.
+
+### Funcionalidades
+
+- Criação automática da tabela `sales`.
+- Identificador de venda como chave primária.
+- Importação dos dados processados pelo pipeline Pandas.
+- Prevenção de importações duplicadas.
+- Consultas SQL para quantidade de vendas e faturamento.
+
+### Executar a importação
+
+```powershell
+python -m src.datapulse.db.import_sales
+```
+
+O banco local é armazenado em `data/datapulse.db`.
+Esse arquivo não deve ser publicado no Git.
+
+### Testes
+
+```powershell
+python -m pytest -v
+```
