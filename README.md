@@ -122,3 +122,39 @@ Esse arquivo não deve ser publicado no Git.
 ```powershell
 python -m pytest -v
 ```
+
+## API de análise de vendas
+
+A API FastAPI consulta o banco SQLite e disponibiliza indicadores
+de vendas e desempenho de produtos.
+
+### Endpoints
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/` | Informações do projeto |
+| GET | `/health` | Verificação de saúde |
+| GET | `/sales` | Lista vendas |
+| GET | `/analytics/summary` | Indicadores gerais |
+| GET | `/analytics/products` | Desempenho por produto |
+| GET | `/docs` | Documentação interativa |
+
+### Paginação
+
+O endpoint `/sales` aceita os parâmetros `limit` e `offset`.
+
+Exemplo:
+
+`/sales?limit=10&offset=0`
+
+### Executar a API
+
+```powershell
+python -m uvicorn src.datapulse.api.main:app --reload
+```
+
+### Executar os testes
+
+```powershell
+python -m pytest -v
+```
