@@ -158,3 +158,22 @@ python -m uvicorn src.datapulse.api.main:app --reload
 ```powershell
 python -m pytest -v
 ```
+
+## Dashboard Streamlit
+
+Dashboard interativo conectado à API FastAPI.
+
+### Funcionalidades
+
+- Indicadores de faturamento e vendas.
+- Ticket médio.
+- Unidades vendidas.
+- Gráfico de faturamento por produto.
+- Evolução diária das vendas.
+- Filtro de período.
+- Histórico detalhado.
+
+### Executar
+
+```powershell
+python -m streamlit run src/datapulse/dashboard/app.py

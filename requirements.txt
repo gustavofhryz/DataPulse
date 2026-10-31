@@ -8,3 +8,6 @@ plotly
 pytest
 httpx
 
+streamlit
+requests
+pandas
