@@ -2,6 +2,18 @@ import os
 
 import streamlit as st
 
+API_URL = os.getenv(
+    "DATAPULSE_API_URL",
+    "http://127.0.0.1:8000"
+)
+
+try:
+    API_URL = st.secrets.get("DATAPULSE_API_URL", API_URL)
+except Exception:
+    pass
+
+API_URL = API_URL.rstrip("/")
+
 st.set_page_config(
     page_title="DataPulse",
     page_icon="📊",
