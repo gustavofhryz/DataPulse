@@ -47,3 +47,7 @@ data/raw/*
 # Não publicar os dados processados gerados localmente
 !data/processed/
 data/processed/*
+
+.env
+.streamlit/secrets.toml
+*.db

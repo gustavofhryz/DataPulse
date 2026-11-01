@@ -11,3 +11,5 @@ httpx
 streamlit
 requests
 pandas
+
+psycopg[binary]

@@ -1,3 +1,4 @@
+import os
 
 import streamlit as st
 
@@ -42,7 +43,13 @@ import streamlit as st
 # CONFIGURAÇÕES
 # ==========================================
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = (
+    os.getenv("DATAPULSE_API_URL")
+    or st.secrets.get(
+        "DATAPULSE_API_URL",
+        "http://127.0.0.1:8000",
+    )
+).rstrip("/")
 
 st.set_page_config(
     page_title="DataPulse | Analytics",

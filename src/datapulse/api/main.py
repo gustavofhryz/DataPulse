@@ -3,6 +3,8 @@ from fastapi import FastAPI
 
 from src.datapulse.api.routes import router as data_router
 
+from src.datapulse.db.database import create_tables
+
 app = FastAPI(
     title="DataPulse API",
     description="API de análise de vendas e indicadores de negócio",
@@ -24,3 +26,7 @@ def health():
 
 
 app.include_router(data_router)
+
+@app.on_event("startup")
+def initialize_database():
+    create_tables()
