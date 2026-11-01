@@ -1,5 +1,7 @@
 
-from fastapi import APIRouter, Depends, Query
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -14,11 +16,34 @@ router = APIRouter(tags=["DataPulse Analytics"])
 def list_sales(
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
+    product: str | None = Query(default=None, min_length=1),
     db: Session = Depends(get_db),
 ):
-    """Lista vendas com paginação."""
+    """Lista vendas com paginação e filtros."""
+
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(
+            status_code=400,
+            detail="A data inicial não pode ser maior que a data final.",
+        )
+
+    statement = select(Sale)
+
+    if start_date:
+        statement = statement.where(Sale.data >= start_date)
+
+    if end_date:
+        statement = statement.where(Sale.data <= end_date)
+
+    if product:
+        statement = statement.where(
+            Sale.produto.ilike(f"%{product.strip()}%")
+        )
+
     statement = (
-        select(Sale)
+        statement
         .order_by(Sale.data.desc(), Sale.id_venda)
         .limit(limit)
         .offset(offset)
@@ -42,6 +67,7 @@ def list_sales(
 @router.get("/analytics/summary")
 def get_summary(db: Session = Depends(get_db)):
     """Retorna indicadores gerais de vendas."""
+
     statement = select(
         func.count(Sale.id_venda),
         func.coalesce(func.sum(Sale.faturamento), 0.0),
@@ -66,6 +92,7 @@ def get_summary(db: Session = Depends(get_db)):
 @router.get("/analytics/products")
 def get_product_analytics(db: Session = Depends(get_db)):
     """Agrupa vendas por produto e ordena por faturamento."""
+
     revenue = func.sum(Sale.faturamento)
 
     statement = (

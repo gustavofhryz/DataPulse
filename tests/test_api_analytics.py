@@ -82,6 +82,35 @@ def test_list_sales_returns_database_records(client):
     assert response.json()[0]["id_venda"] == "V003"
 
 
+def test_sales_pagination_limit(client):
+    response = client.get("/sales?limit=2&offset=0")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+def test_sales_pagination_offset(client):
+    response = client.get("/sales?limit=2&offset=1")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    assert response.json()[0]["id_venda"] == "V002"
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"limit": 0},
+        {"limit": 501},
+        {"offset": -1},
+    ],
+)
+def test_sales_rejects_invalid_pagination(client, params):
+    response = client.get("/sales", params=params)
+
+    assert response.status_code == 422
+
+
 def test_summary_calculates_metrics(client):
     response = client.get("/analytics/summary")
 
@@ -105,4 +134,108 @@ def test_products_are_ordered_by_revenue(client):
         "Teclado",
         "Mouse",
     ]
+
     assert products[0]["faturamento"] == 899.90
+
+
+def test_sales_filter_by_start_date(client):
+    response = client.get(
+        "/sales",
+        params={"start_date": "2026-10-02"},
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 2
+    assert all(sale["data"] >= "2026-10-02" for sale in sales)
+
+
+def test_sales_filter_by_end_date(client):
+    response = client.get(
+        "/sales",
+        params={"end_date": "2026-10-02"},
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 2
+    assert all(sale["data"] <= "2026-10-02" for sale in sales)
+
+
+def test_sales_filter_by_date_range(client):
+    response = client.get(
+        "/sales",
+        params={
+            "start_date": "2026-10-02",
+            "end_date": "2026-10-02",
+        },
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 1
+    assert sales[0]["id_venda"] == "V002"
+
+
+def test_sales_rejects_invalid_date_range(client):
+    response = client.get(
+        "/sales",
+        params={
+            "start_date": "2026-10-03",
+            "end_date": "2026-10-01",
+        },
+    )
+
+    assert response.status_code == 400
+
+
+def test_sales_filter_by_product(client):
+    response = client.get(
+        "/sales",
+        params={"product": "Mouse"},
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 1
+    assert sales[0]["produto"] == "Mouse"
+
+
+def test_sales_filter_by_partial_product_name(client):
+    response = client.get(
+        "/sales",
+        params={"product": "mon"},
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 1
+    assert sales[0]["produto"] == "Monitor"
+
+
+def test_sales_filter_by_product_and_date(client):
+    response = client.get(
+        "/sales",
+        params={
+            "product": "Mouse",
+            "start_date": "2026-10-01",
+            "end_date": "2026-10-03",
+        },
+    )
+
+    assert response.status_code == 200
+
+    sales = response.json()
+
+    assert len(sales) == 1
+    assert sales[0]["produto"] == "Mouse"
