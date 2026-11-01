@@ -6,7 +6,9 @@ from sqlalchemy import func, select
 from src.datapulse.db.database import (
     SessionLocal,
     create_tables,
+    engine,
 )
+
 from src.datapulse.db.models import Sale
 from src.datapulse.db.repository import import_clean_sales_csv
 
@@ -42,7 +44,7 @@ def main() -> None:
 
     print(f"Total de vendas no banco: {total_sales}")
     print(f"Faturamento total: R$ {total_revenue:.2f}")
-    print(f"Banco utilizado: {ROOT_DIR / 'data' / 'datapulse.db'}")
+    print(f"Banco utilizado: {engine.dialect.name}")
 
 
 if __name__ == "__main__":

@@ -30,3 +30,5 @@ app.include_router(data_router)
 @app.on_event("startup")
 def initialize_database():
     create_tables()
+
+    
