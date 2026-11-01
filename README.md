@@ -1,3 +1,6 @@
+<img width="1114" height="496" alt="dashboard-overview" src="https://github.com/user-attachments/assets/bcf0095b-97ae-4b93-ba13-4666e831902b" />
+
+
 # 📊 DataPulse — Plataforma de Análise de Dados
 
 **Uma plataforma de análise de dados de vendas desenvolvida com Python, Pandas, SQLAlchemy, FastAPI e Streamlit.**
