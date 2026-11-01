@@ -44,6 +44,27 @@ st.set_page_config(
 
 
 # ==========================================
+# FUNÇÕES AUXILIARES
+# ==========================================
+
+def format_brl(value):
+    """Formata valores monetários no padrão brasileiro."""
+
+    formatted = f"{value:,.2f}"
+    formatted = formatted.replace(",", "X")
+    formatted = formatted.replace(".", ",")
+    formatted = formatted.replace("X", ".")
+
+    return f"R$ {formatted}"
+
+
+def format_number(value):
+    """Formata números com separador de milhar brasileiro."""
+
+    return f"{value:,.0f}".replace(",", ".")
+
+
+# ==========================================
 # ESTILO VISUAL
 # ==========================================
 
@@ -105,6 +126,7 @@ try:
     sales_data = get_sales_data()
 
 except requests.RequestException as error:
+
     st.error(
         "Não foi possível conectar à API DataPulse. "
         "Verifique a disponibilidade do servidor."
@@ -123,10 +145,12 @@ except requests.RequestException as error:
 df = pd.DataFrame(sales_data)
 
 if df.empty:
+
     st.warning(
         "Nenhuma venda encontrada no banco de dados. "
         "Execute o pipeline e importe os dados."
     )
+
     st.stop()
 
 
@@ -145,12 +169,18 @@ df["quantidade"] = pd.to_numeric(
     errors="coerce",
 )
 
+
 df = df.dropna(
     subset=["data", "faturamento", "quantidade"]
 )
 
+
 if df.empty:
-    st.warning("Não existem vendas com dados válidos.")
+
+    st.warning(
+        "Não existem vendas com dados válidos."
+    )
+
     st.stop()
 
 
@@ -184,7 +214,9 @@ selected_product = st.sidebar.selectbox(
 
 
 if st.sidebar.button("🔄 Atualizar dados"):
+
     get_sales_data.clear()
+
     st.rerun()
 
 
@@ -194,6 +226,7 @@ if st.sidebar.button("🔄 Atualizar dados"):
 
 start_date = None
 end_date = None
+
 
 if isinstance(date_range, (tuple, list)) and len(date_range) == 2:
 
@@ -209,6 +242,7 @@ product_filter = (
 
 
 try:
+
     filtered_sales = get_sales_data(
         start_date=start_date,
         end_date=end_date,
@@ -261,17 +295,20 @@ if not filtered_df.empty:
 
 total_sales = len(filtered_df)
 
+
 total_revenue = (
     filtered_df["faturamento"].sum()
     if not filtered_df.empty
     else 0
 )
 
+
 average_ticket = (
     total_revenue / total_sales
     if total_sales > 0
     else 0
 )
+
 
 total_units = (
     filtered_df["quantidade"].sum()
@@ -287,22 +324,39 @@ col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(
     "Faturamento",
-    f"R$ {total_revenue:,.2f}",
+    format_brl(total_revenue),
 )
+
 
 col2.metric(
     "Vendas",
-    f"{total_sales:,}",
+    format_number(total_sales),
 )
+
 
 col3.metric(
     "Ticket médio",
-    f"R$ {average_ticket:,.2f}",
+    format_brl(average_ticket),
 )
+
 
 col4.metric(
     "Unidades vendidas",
-    f"{total_units:,.0f}",
+    format_number(total_units),
+)
+
+
+# ==========================================
+# FILTROS ATIVOS
+# ==========================================
+
+display_start = start_date or min_date.isoformat()
+display_end = end_date or max_date.isoformat()
+
+
+st.caption(
+    f"Produto selecionado: {selected_product} | "
+    f"Período: {display_start} até {display_end}"
 )
 
 
@@ -390,9 +444,11 @@ if not filtered_df.empty:
         )
     )
 
+
     product_table["faturamento"] = (
-        product_table["faturamento"].round(2)
+        product_table["faturamento"].apply(format_brl)
     )
+
 
     st.dataframe(
         product_table,
@@ -416,11 +472,21 @@ st.markdown("### Histórico de vendas")
 
 if not filtered_df.empty:
 
+    history_df = filtered_df.sort_values(
+        "data",
+        ascending=False,
+    ).copy()
+
+    history_df["faturamento"] = (
+        history_df["faturamento"].apply(format_brl)
+    )
+
+    history_df["preco_unitario"] = (
+        history_df["preco_unitario"].apply(format_brl)
+    )
+
     st.dataframe(
-        filtered_df.sort_values(
-            "data",
-            ascending=False,
-        ),
+        history_df,
         use_container_width=True,
         hide_index=True,
     )

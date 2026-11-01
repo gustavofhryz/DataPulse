@@ -1,4 +1,3 @@
-
 fastapi
 uvicorn[standard]
 pandas
@@ -7,9 +6,5 @@ streamlit
 plotly
 pytest
 httpx
-
-streamlit
 requests
-pandas
-
 psycopg[binary]
