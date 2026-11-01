@@ -1,53 +1,7 @@
 import os
 
-import streamlit as st
-
-API_URL = os.getenv(
-    "DATAPULSE_API_URL",
-    "http://127.0.0.1:8000"
-)
-
-try:
-    API_URL = st.secrets.get("DATAPULSE_API_URL", API_URL)
-except Exception:
-    pass
-
-API_URL = API_URL.rstrip("/")
-
-st.set_page_config(
-    page_title="DataPulse",
-    page_icon="📊",
-    layout="wide",
-)
-
-st.title("DataPulse")
-st.subheader("Plataforma de análise de dados")
-
-st.info(
-    "Ambiente inicial configurado. "
-    "A integração com dados reais será implementada nas próximas etapas."
-)
-
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Registros processados", "—")
-col2.metric("Faturamento", "—")
-col3.metric("Ticket médio", "—")
-
-st.markdown(
-    """
-    ### Próximas funcionalidades
-
-    - Importação de arquivos CSV
-    - Validação e limpeza de dados
-    - Armazenamento em banco SQL
-    - Indicadores e gráficos interativos
-    """
-)
-
-
-import requests
 import pandas as pd
+import requests
 import streamlit as st
 
 
@@ -55,13 +9,18 @@ import streamlit as st
 # CONFIGURAÇÕES
 # ==========================================
 
-API_URL = (
-    os.getenv("DATAPULSE_API_URL")
-    or st.secrets.get(
-        "DATAPULSE_API_URL",
-        "http://127.0.0.1:8000",
-    )
-).rstrip("/")
+def _get_api_url() -> str:
+    """Lê a URL da API: variável de ambiente, depois st.secrets, depois local."""
+    url = os.getenv("DATAPULSE_API_URL")
+    if not url:
+        try:
+            url = st.secrets.get("DATAPULSE_API_URL")
+        except Exception:
+            url = None
+    return (url or "http://127.0.0.1:8000").rstrip("/")
+
+
+API_URL = _get_api_url()
 
 st.set_page_config(
     page_title="DataPulse | Analytics",
@@ -146,16 +105,10 @@ if df.empty:
     st.stop()
 
 df["data"] = pd.to_datetime(df["data"], errors="coerce")
-df["faturamento"] = pd.to_numeric(
-    df["faturamento"], errors="coerce"
-)
-df["quantidade"] = pd.to_numeric(
-    df["quantidade"], errors="coerce"
-)
+df["faturamento"] = pd.to_numeric(df["faturamento"], errors="coerce")
+df["quantidade"] = pd.to_numeric(df["quantidade"], errors="coerce")
 
-df = df.dropna(
-    subset=["data", "faturamento", "quantidade"]
-)
+df = df.dropna(subset=["data", "faturamento", "quantidade"])
 
 
 # ==========================================
@@ -194,40 +147,18 @@ else:
 # ==========================================
 
 total_sales = len(filtered_df)
-
 total_revenue = filtered_df["faturamento"].sum()
-
-average_ticket = (
-    total_revenue / total_sales
-    if total_sales > 0
-    else 0
-)
-
+average_ticket = total_revenue / total_sales if total_sales > 0 else 0
 total_units = filtered_df["quantidade"].sum()
 
 st.markdown("### Indicadores de desempenho")
 
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric(
-    "Faturamento",
-    f"R$ {total_revenue:,.2f}",
-)
-
-col2.metric(
-    "Vendas",
-    f"{total_sales:,}",
-)
-
-col3.metric(
-    "Ticket médio",
-    f"R$ {average_ticket:,.2f}",
-)
-
-col4.metric(
-    "Unidades vendidas",
-    f"{total_units:,.0f}",
-)
+col1.metric("Faturamento", f"R$ {total_revenue:,.2f}")
+col2.metric("Vendas", f"{total_sales:,}")
+col3.metric("Ticket médio", f"R$ {average_ticket:,.2f}")
+col4.metric("Unidades vendidas", f"{total_units:,.0f}")
 
 st.divider()
 
@@ -255,9 +186,7 @@ with right:
     st.markdown("#### Evolução das vendas")
 
     daily_chart = (
-        filtered_df.groupby(
-            filtered_df["data"].dt.date
-        )["faturamento"]
+        filtered_df.groupby(filtered_df["data"].dt.date)["faturamento"]
         .sum()
     )
 
@@ -284,9 +213,7 @@ if not filtered_df.empty:
         .sort_values("faturamento", ascending=False)
     )
 
-    product_table["faturamento"] = (
-        product_table["faturamento"].round(2)
-    )
+    product_table["faturamento"] = product_table["faturamento"].round(2)
 
     st.dataframe(
         product_table,
@@ -304,15 +231,12 @@ st.divider()
 st.markdown("### Histórico de vendas")
 
 st.dataframe(
-    filtered_df.sort_values(
-        "data", ascending=False
-    ),
+    filtered_df.sort_values("data", ascending=False),
     use_container_width=True,
     hide_index=True,
 )
 
 st.caption(
     "DataPulse | Dados consultados pela API FastAPI "
-    "e armazenados no SQLite."
+    "e armazenados no banco Neon."
 )
-
